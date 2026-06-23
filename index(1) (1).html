@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Highway Diva Dispatcher Academy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#BA7517;--gold-light:#FAEEDA;--gold-dark:#633806;
+  --green:#3B6D11;--green-light:#EAF3DE;--green-dark:#173404;
+  --bg:#f7f5f0;--card:#ffffff;--text:#1a1a1a;--muted:#6b6b6b;
+  --border:#e0ddd5;--radius:14px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+.screen{display:none;min-height:100vh;padding:0}
+.screen.active{display:block}
+
+/* NAME SCREEN */
+#screen-name{background:linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:2rem 1.5rem;min-height:100vh}
+#screen-name.active{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.logo-circle{width:80px;height:80px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 1.5rem}
+#screen-name h1{color:#fff;font-size:24px;font-weight:700;text-align:center;margin-bottom:8px}
+#screen-name p{color:rgba(255,255,255,0.7);text-align:center;font-size:14px;margin-bottom:2rem;line-height:1.6}
+.name-input{width:100%;padding:14px 16px;border-radius:var(--radius-sm);border:2px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff;font-size:16px;margin-bottom:12px;outline:none}
+.name-input::placeholder{color:rgba(255,255,255,0.4)}
+.name-input:focus{border-color:var(--gold)}
+.btn-gold{width:100%;padding:15px;background:var(--gold);color:#fff;border:none;border-radius:var(--radius-sm);font-size:16px;font-weight:600;cursor:pointer;letter-spacing:0.3px}
+.btn-gold:active{opacity:0.9}
+
+/* MAIN APP */
+#screen-main{background:var(--bg)}
+.topbar{background:var(--card);padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px}
+.topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0}
+.topbar-name{font-weight:600;font-size:14px}
+.topbar-status{font-size:11px;color:var(--muted)}
+.topbar-share{margin-left:auto;background:var(--green-light);color:var(--green);border:none;border-radius:99px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer}
+
+.earn-card{margin:16px;background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:var(--radius);padding:18px;color:#fff}
+.earn-label{font-size:11px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px}
+.earn-amount{font-size:28px;font-weight:700;color:var(--gold)}
+.earn-sub{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;line-height:1.5}
+.earn-progress{margin-top:12px}
+.earn-progress-label{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:6px}
+.prog-bar{height:6px;background:rgba(255,255,255,0.15);border-radius:99px;margin-top:6px;overflow:hidden}
+.prog-fill{height:100%;background:var(--gold);border-radius:99px;transition:width 0.5s}
+
+.section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin:20px 16px 8px}
+
+.module-list{padding:0 16px;display:flex;flex-direction:column;gap:10px;padding-bottom:30px}
+.module-card{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+.module-card:active{transform:scale(0.98)}
+.module-card.locked{opacity:0.45;cursor:not-allowed}
+.module-card.completed{border-color:var(--green);border-width:1.5px}
+.module-card.active-mod{border-color:var(--gold);border-width:1.5px}
+.mc-row{display:flex;align-items:center;gap:12px}
+.mc-icon{width:42px;height:42px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.mc-icon.done{background:var(--green-light)}
+.mc-icon.open{background:var(--gold-light)}
+.mc-icon.lock{background:#f0ede8}
+.mc-info{flex:1;min-width:0}
+.mc-title{font-size:14px;font-weight:600;line-height:1.3}
+.mc-earn{font-size:12px;color:var(--gold);margin-top:2px;font-weight:600}
+.mc-badge{font-size:11px;padding:4px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.badge-done{background:var(--green-light);color:var(--green)}
+.badge-open{background:var(--gold-light);color:var(--gold-dark)}
+.badge-lock{background:#f0ede8;color:var(--muted)}
+.badge-progress{background:#e8f0fe;color:#1a56db}
+
+/* CHAT SCREEN */
+#screen-chat{background:var(--bg);height:100vh}
+#screen-chat.active{display:flex;flex-direction:column}
+.chat-topbar{background:var(--card);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.back-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gold);padding:0 8px 0 0;line-height:1}
+.chat-mod-info{flex:1}
+.chat-mod-title{font-size:14px;font-weight:600}
+.chat-mod-sub{font-size:11px;color:var(--muted)}
+.chat-earn-pill{background:var(--gold-light);color:var(--gold-dark);font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px}
+
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.msg{max-width:88%;padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.6;word-wrap:break-word}
+.msg.ai{background:var(--card);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border)}
+.msg.user{background:var(--gold);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg.system{background:var(--green-light);color:var(--green-dark);align-self:center;font-size:12px;text-align:center;padding:8px 16px;border-radius:99px;max-width:90%;font-weight:600}
+.msg.unlock-msg{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff;align-self:center;max-width:95%;text-align:center;padding:16px;border-radius:var(--radius)}
+.unlock-amount{font-size:22px;font-weight:700;color:var(--gold);margin:6px 0}
+
+.typing{align-self:flex-start;background:var(--card);border:1px solid var(--border);border-radius:16px;border-bottom-left-radius:4px;padding:12px 16px;display:flex;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bounce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+.quiz-choices{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.quiz-btn{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;text-align:left;font-size:14px;cursor:pointer;color:var(--text);font-family:inherit;line-height:1.4;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.quiz-btn:active{background:var(--gold-light);border-color:var(--gold)}
+.quiz-btn.correct{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
+.quiz-btn.wrong{background:#fff0f0;border-color:#dc2626;color:#7f1d1d}
+
+.essay-box{width:100%;min-height:100px;padding:12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--card);resize:vertical;margin-top:8px;outline:none}
+.essay-box:focus{border-color:var(--gold)}
+.essay-submit{margin-top:8px;background:var(--gold);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%}
+
+.quick-bar{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.quick-bar::-webkit-scrollbar{display:none}
+.quick-chip{background:var(--card);border:1px solid var(--border);border-radius:99px;padding:7px 14px;font-size:13px;white-space:nowrap;cursor:pointer;color:var(--text);font-family:inherit;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.quick-chip:active{background:var(--gold-light)}
+
+.input-bar{display:flex;gap:8px;padding:10px 12px;background:var(--card);border-top:1px solid var(--border);flex-shrink:0}
+.chat-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:99px;font-size:15px;background:var(--bg);color:var(--text);outline:none;font-family:inherit}
+.chat-input:focus{border-color:var(--gold)}
+.send-btn{width:42px;height:42px;background:var(--gold);border:none;border-radius:50%;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn:disabled{opacity:0.5}
+
+/* PROGRESS REPORT SCREEN */
+#screen-report{background:var(--bg);min-height:100vh}
+.report-topbar{background:var(--card);padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.report-content{padding:16px;padding-bottom:40px}
+.report-hero{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:var(--radius);padding:20px;color:#fff;margin-bottom:16px}
+.report-hero h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.report-hero p{font-size:13px;color:rgba(255,255,255,0.6)}
+.report-earn{font-size:26px;font-weight:700;color:var(--gold);margin-top:10px}
+
+.report-section{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.report-section h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-box{background:var(--bg);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.stat-num{font-size:22px;font-weight:700;color:var(--gold)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+
+.strength-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.strength-item:last-child{border-bottom:none}
+.strength-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.dot-strong{background:var(--green)}
+.dot-weak{background:#dc2626}
+.dot-neutral{background:var(--gold)}
+.strength-text{font-size:13px;line-height:1.5;color:var(--text)}
+.strength-label{font-size:11px;font-weight:600;margin-bottom:2px}
+
+.learning-style-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ls-label{font-size:12px;color:var(--muted);width:80px;flex-shrink:0}
+.ls-bar{flex:1;height:8px;background:var(--bg);border-radius:99px;overflow:hidden}
+.ls-fill{height:100%;border-radius:99px}
+.ls-pct{font-size:12px;font-weight:600;width:34px;text-align:right}
+
+.share-report-btn{width:100%;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);padding:15px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit}
+.whatsapp-btn{width:100%;background:#25D366;color:#fff;border:none;border-radius:var(--radius-sm);padding:15px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: NAME ENTRY -->
+<div id="screen-name" class="screen active">
+  <div class="logo-circle">🚛</div>
+  <h1>Highway Diva<br>Dispatcher Academy</h1>
+  <p>Your step-by-step guide to earning<br>6 figures as a dispatcher — from your phone.</p>
+  <input class="name-input" id="name-input" type="text" placeholder="Enter your first name..." autocomplete="given-name" />
+  <button class="btn-gold" onclick="startApp()">Begin My Journey →</button>
+</div>
+
+<!-- SCREEN 2: MAIN DASHBOARD -->
+<div id="screen-main" class="screen">
+  <div class="topbar">
+    <div class="topbar-avatar" id="topbar-avatar">?</div>
+    <div>
+      <div class="topbar-name" id="topbar-name">Loading...</div>
+      <div class="topbar-status" id="topbar-status">0 of 6 modules complete</div>
+    </div>
+    <button class="topbar-share" onclick="showReport()">📊 My Progress</button>
+  </div>
+
+  <div class="earn-card">
+    <div class="earn-label">💰 Your Unlocked Earning Potential</div>
+    <div class="earn-amount" id="earn-amount">$0 / week</div>
+    <div class="earn-sub" id="earn-sub">Complete Module 1 to unlock your first income tier</div>
+    <div class="earn-progress">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px">
+        <span>Overall progress</span><span id="prog-pct">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="section-title">Your Modules</div>
+  <div class="module-list" id="module-list"></div>
+</div>
+
+<!-- SCREEN 3: CHAT/LESSON -->
+<div id="screen-chat" class="screen">
+  <div class="chat-topbar">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <div class="chat-mod-info">
+      <div class="chat-mod-title" id="chat-mod-title">Module</div>
+      <div class="chat-mod-sub" id="chat-mod-sub">Study → Quiz → Unlock</div>
+    </div>
+    <div class="chat-earn-pill" id="chat-earn-pill">$0</div>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="quick-bar" id="quick-bar"></div>
+  <div class="input-bar">
+    <input class="chat-input" id="chat-input" type="text" placeholder="Ask your coach..." />
+    <button class="send-btn" id="send-btn" onclick="sendMessage()">↑</button>
+  </div>
+</div>
+
+<!-- SCREEN 4: PROGRESS REPORT -->
+<div id="screen-report" class="screen">
+  <div class="report-topbar">
+    <button class="back-btn" onclick="goBackFromReport()">←</button>
+    <span style="font-weight:600;font-size:15px">Progress Report</span>
+  </div>
+  <div class="report-content" id="report-content"></div>
+</div>
+
+<script>
+const MODULES = [
+  {
+    id:1,title:"Business Setup & FMCSA Rules",icon:"🏢",
+    earn:"$500/week",earnNum:500,
+    earnDetail:"You can now legally operate as a dispatching service.",
+    topics:["LLC formation and naming your company","FMCSA dispatching rules 2023","What authority you need vs broker authority","Equipment required (phone, computer, load board)","How dispatcher contracts work with carriers"],
+    mcQuestions:[
+      {q:"What percentage does a dispatcher typically charge a carrier?",choices:["3-5%","7-10%","15-20%","1-2%"],correct:1,topic:"rates"},
+      {q:"As a dispatcher WITHOUT broker authority, who pays you?",choices:["The Broker","The Shipper","The Motor Carrier","FMCSA"],correct:2,topic:"payment"},
+      {q:"What document must you have with EVERY carrier you work with?",choices:["A verbal agreement","A written legal contract","A broker bond","An FMCSA license"],correct:1,topic:"legal"},
+      {q:"Which of these do you NOT need to start dispatching?",choices:["A telephone","A broker's authority","A computer","WiFi"],correct:1,topic:"setup"},
+    ],
+    essayQuestions:[
+      {q:"In your own words, explain the difference between a dispatcher and a broker. Why does this difference matter legally?",topic:"legal",key:"broker vs dispatcher"},
+      {q:"You just formed your LLC. What are your next 3 steps to start getting clients? Be specific.",topic:"setup",key:"business setup"},
+    ]
+  },
+  {
+    id:2,title:"Carriers, Onboarding & Communication",icon:"🤝",
+    earn:"$1,500/week",earnNum:1500,
+    earnDetail:"You can now sign carriers and build your book of business.",
+    topics:["Where to find carriers (LinkedIn, FMCSA directory, truck stops)","Cold calling scripts and first impressions","Carrier packet walkthrough","The 6 points of communication","Onboarding questions to ask every carrier"],
+    mcQuestions:[
+      {q:"What is a good weekly gross target you should aim to get per truck?",choices:["$1,000","$2,500","$5,000","$10,000"],correct:2,topic:"rates"},
+      {q:"How many days should a new carrier have to complete their carrier packet?",choices:["1 day","3-5 days","2 weeks","1 month"],correct:1,topic:"onboarding"},
+      {q:"What does BEP stand for in trucking?",choices:["Best Earnings Potential","Break-Even Point","Broker Exchange Protocol","Base Earnings Per mile"],correct:1,topic:"calculations"},
+      {q:"When a carrier first reaches out to you, what is the FIRST thing you should ask?",choices:["How much do you want to earn?","Do you have an active authority?","What type of truck do you have?","Have you used a dispatcher before?"],correct:1,topic:"onboarding"},
+    ],
+    essayQuestions:[
+      {q:"Walk me through what happens on your very first phone call with a new carrier. What do you say? What do you ask? What happens next?",topic:"onboarding",key:"first call"},
+      {q:"What are the 6 points of communication and why is each one important? Give an example of what goes wrong if one is missed.",topic:"communication",key:"6 points"},
+    ]
+  },
+  {
+    id:3,title:"Load Boards & Finding Loads",icon:"🔍",
+    earn:"$3,000/week",earnNum:3000,
+    earnDetail:"You can now independently find and evaluate profitable loads.",
+    topics:["Which load board for which truck type","How to read a load board listing","Deadhead miles — what they are and why they matter","Trucking seasons and market timing","Hot market maps and how to use them"],
+    mcQuestions:[
+      {q:"What time is optimal to start looking for loads in the morning?",choices:["5am","7am","10am","12pm"],correct:1,topic:"timing"},
+      {q:"What does 'deadhead' mean in trucking?",choices:["A broken-down truck","Driving with an empty trailer","A cancelled load","A type of freight"],correct:1,topic:"terminology"},
+      {q:"Which season has the LOWEST freight volume?",choices:["Food Season (Apr-Jul)","Peak Season (Aug-Oct)","Holiday Season (Nov-Dec)","Shhh Season (Jan-Mar)"],correct:3,topic:"seasons"},
+      {q:"Which load board is best for car haulers?",choices:["DAT Board","123 Load Board","Central Dispatch","GetLoaded.com"],correct:2,topic:"tools"},
+    ],
+    essayQuestions:[
+      {q:"It's January (Shhh Season) and freight is slow. Your carrier is panicking. What do you tell them and what strategy do you use to find loads?",topic:"seasons",key:"slow season strategy"},
+      {q:"Explain what you look at when you first open the load board in the morning. Walk through your process step by step.",topic:"load boards",key:"load board process"},
+    ]
+  },
+  {
+    id:4,title:"Negotiating Rates & Booking Loads",icon:"💼",
+    earn:"$5,000/week",earnNum:5000,
+    earnDetail:"You can now negotiate confidently and book profitable loads.",
+    topics:["Negotiation tactics with brokers","How to use 'your driver needs...' language","Rate confirmation walkthrough — what to check","Calculating profitable loads using the BEP formula","What to do immediately after booking"],
+    mcQuestions:[
+      {q:"If you want $2,500 for a lane and the broker asks you to name a rate, what do you open with?",choices:["$2,500 — be honest","$2,000 — leave room","$3,000 — start high","Whatever they offer"],correct:2,topic:"negotiation"},
+      {q:"What is the target rate per mile a dispatcher should aim to get?",choices:["$0.50/mile","$1.00/mile","$2.00+/mile","$5.00/mile"],correct:2,topic:"rates"},
+      {q:"When must you sign and return the Rate Confirmation?",choices:["After the load is delivered","Immediately after verifying all details","Within 3 business days","After the carrier verbally agrees"],correct:1,topic:"paperwork"},
+      {q:"What should you NEVER do once a rate is agreed with a broker?",choices:["Email the carrier","Change the rate","Call to confirm","Send the rate confirmation"],correct:1,topic:"negotiation"},
+    ],
+    essayQuestions:[
+      {q:"A broker says 'this is all I have in it' and offers $1,800 for a lane you know is worth $2,400. What do you say next? Write out the conversation.",topic:"negotiation",key:"negotiation roleplay"},
+      {q:"Calculate the carrier profit for this load: Rate $2,200, 843 miles, diesel $3.20/gallon, 6 mpg, 20% driver cut, $70 tolls, $100/day prorate, your 7% dispatch fee. Show your work.",topic:"calculations",key:"profit calculation"},
+    ]
+  },
+  {
+    id:5,title:"Hours of Service & Trip Planning",icon:"🗺️",
+    earn:"$8,000/week",earnNum:8000,
+    earnDetail:"You can now plan efficient trips and maximize driver hours.",
+    topics:["HOS rules — 11 hour drive, 14 hour window, 70 hour week","34-hour reset planning","Calculating trip distances and timing","Weather monitoring — especially the Midwest","Fuel stop optimization for drivers"],
+    mcQuestions:[
+      {q:"How many hours can a driver legally DRIVE (not be on duty) per day?",choices:["8 hours","11 hours","14 hours","16 hours"],correct:1,topic:"HOS"},
+      {q:"How many miles can a driver realistically cover in one day at 55mph?",choices:["300 miles","450 miles","600 miles","750 miles"],correct:2,topic:"trip planning"},
+      {q:"What must happen after a driver hits 70 hours in 8 days?",choices:["They get a bonus","They take a 34-hour reset","They can drive 2 more hours","Nothing — the limit resets daily"],correct:1,topic:"HOS"},
+      {q:"A driver starts their shift at 8am. By what time must all driving be done?",choices:["6pm","8pm","10pm","Midnight"],correct:2,topic:"HOS"},
+    ],
+    essayQuestions:[
+      {q:"Your driver has 22 hours left on their 70-hour clock. It's Wednesday. How do you plan the rest of their week to maximize earnings while keeping them legal?",topic:"HOS",key:"HOS planning"},
+      {q:"You want to send your driver to the Midwest in February. What are all the things you check before booking that load? Why does each one matter?",topic:"trip planning",key:"midwest winter"},
+    ]
+  },
+  {
+    id:6,title:"Payments, Invoicing & Scaling Up",icon:"💰",
+    earn:"$15,000+/week",earnNum:15000,
+    earnDetail:"🎉 You are now a fully operational 6-figure dispatcher!",
+    topics:["Factoring companies — how they work and why you need them","Sending weekly invoices and tracking payments","Dedicated lanes — what they are and how to get them","Building your book of business","Scaling from 1 truck to 6-7 trucks"],
+    mcQuestions:[
+      {q:"What percentage do factoring companies typically charge carriers?",choices:["1%","3%","7%","10%"],correct:1,topic:"factoring"},
+      {q:"How often should you send invoices to your carrier?",choices:["After every single load","Daily","Once a week","Once a month"],correct:2,topic:"invoicing"},
+      {q:"Approximately how many trucks do you need dispatching to earn $100,000/year?",choices:["2-3 trucks","6-7 trucks","10-12 trucks","15+ trucks"],correct:1,topic:"scaling"},
+      {q:"What is a dedicated lane?",choices:["A highway reserved for trucks","A guaranteed recurring route for one carrier","A load on a load board","A type of carrier contract"],correct:1,topic:"dedicated lanes"},
+    ],
+    essayQuestions:[
+      {q:"You now have 3 carriers. Describe your complete weekly routine — what you do Monday through Friday to keep all 3 trucks running and paid.",topic:"operations",key:"weekly routine"},
+      {q:"One of your carriers wants to leave because rates are low. What do you do and say to keep them? What does the book say about this situation?",topic:"relationships",key:"carrier retention"},
+    ]
+  }
+];
+
+let studentName = '';
+let studentId = '';
+let completed = [];
+let activeModule = null;
+let chatHistory = [];
+let isLoading = false;
+let quizState = null;
+let learningProfile = {};
+let allAnswers = [];
+
+function getStorage(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } }
+function setStorage(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+
+function startApp() {
+  const n = document.getElementById('name-input').value.trim();
+  if (!n) { document.getElementById('name-input').focus(); return; }
+  studentName = n;
+  studentId = 'student_' + n.toLowerCase().replace(/\s+/g,'_') + '_' + Date.now();
+  const saved = getStorage('hd_' + n.toLowerCase());
+  if (saved) {
+    completed = saved.completed || [];
+    learningProfile = saved.learningProfile || {};
+    allAnswers = saved.allAnswers || [];
+    studentId = saved.studentId || studentId;
+  }
+  saveData();
+  showMain();
+}
+
+function saveData() {
+  setStorage('hd_' + studentName.toLowerCase(), { completed, learningProfile, allAnswers, studentId, studentName });
+}
+
+function showMain() {
+  showScreen('screen-main');
+  document.getElementById('topbar-avatar').textContent = studentName[0].toUpperCase();
+  document.getElementById('topbar-name').textContent = studentName;
+  updateDashboard();
+  renderModules();
+}
+
+function updateDashboard() {
+  const c = completed.length;
+  document.getElementById('topbar-status').textContent = c + ' of 6 modules complete';
+  const pct = Math.round((c / 6) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  if (!c) {
+    document.getElementById('earn-amount').textContent = '$0 / week';
+    document.getElementById('earn-sub').textContent = 'Complete Module 1 to unlock your first income tier';
+  } else {
+    const last = Math.max(...completed);
+    const m = MODULES.find(x => x.id === last);
+    document.getElementById('earn-amount').textContent = m.earn + ' unlocked!';
+    document.getElementById('earn-sub').textContent = m.earnDetail;
+  }
+}
+
+function renderModules() {
+  const list = document.getElementById('module-list');
+  list.innerHTML = '';
+  MODULES.forEach((m, i) => {
+    const done = completed.includes(m.id);
+    const unlocked = i === 0 || completed.includes(MODULES[i-1].id);
+    const div = document.createElement('div');
+    div.className = 'module-card' + (done ? ' completed' : '') + (!unlocked ? ' locked' : '');
+    const badgeClass = done ? 'badge-done' : unlocked ? 'badge-open' : 'badge-lock';
+    const badgeText = done ? '✓ Done' : unlocked ? 'Start' : '🔒';
+    div.innerHTML = `
+      <div class="mc-row">
+        <div class="mc-icon ${done?'done':unlocked?'open':'lock'}" style="font-size:22px">${m.icon}</div>
+        <div class="mc-info">
+          <div class="mc-title">Module ${m.id}: ${m.title}</div>
+          <div class="mc-earn">Unlocks ${m.earn}/week</div>
+        </div>
+        <span class="mc-badge ${badgeClass}">${badgeText}</span>
+      </div>`;
+    if (unlocked) div.onclick = () => openModule(m);
+    list.appendChild(div);
+  });
+}
+
+function openModule(m) {
+  activeModule = m;
+  quizState = null;
+  chatHistory = [];
+  document.getElementById('chat-mod-title').textContent = 'Module ' + m.id + ': ' + m.title;
+  document.getElementById('chat-mod-sub').textContent = 'Learn → Quiz → Unlock earnings';
+  document.getElementById('chat-earn-pill').textContent = m.earn;
+  document.getElementById('chat-messages').innerHTML = '';
+  showScreen('screen-chat');
+  const alreadyDone = completed.includes(m.id);
+  chatHistory = [{
+    role:'user',
+    content:`I am ${studentName}, studying Module ${m.id}: "${m.title}" of the Highway Diva Dispatcher course. The topics are: ${m.topics.join('; ')}. ${alreadyDone ? 'I have already completed this module but want to review.' : 'I need to learn these topics so I can pass the quiz and unlock earning potential as a dispatcher.'} Please greet me by name and ask what I want to start with, or begin teaching the first topic.`
+  }];
+  setQuickChips(['Explain the basics','What's most important?','Give me an example','I\'m ready to quiz!']);
+  fetchAI();
+}
+
+function goBack() {
+  showScreen('screen-main');
+  updateDashboard();
+  renderModules();
+}
+
+function goBackFromReport() { showScreen('screen-main'); }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function addMsg(role, text, extra) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  if (extra) { div.innerHTML = extra; } else { div.textContent = text; }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'typing'; div.id = 'typing-ind';
+  div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+}
+function removeTyping() { const t=document.getElementById('typing-ind'); if(t)t.remove(); }
+
+function setQuickChips(chips) {
+  const bar = document.getElementById('quick-bar');
+  bar.innerHTML = chips.map(c => `<button class="quick-chip" onclick="quickSend('${c.replace(/'/g,"\\'")}')">${c}</button>`).join('');
+}
+
+function quickSend(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function sendMessage() {
+  if (!activeModule) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+  input.value = '';
+  if (quizState && quizState.type === 'essay') return; // essay handled separately
+  addMsg('user', text);
+  if (quizState) { handleQuizInput(text); return; }
+  chatHistory.push({role:'user', content: text});
+  if (text.toLowerCase().includes('quiz') || text.toLowerCase().includes('test me') || text.toLowerCase().includes('ready')) {
+    startQuiz(); return;
+  }
+  fetchAI();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('chat-input').addEventListener('keydown', e => { if(e.key==='Enter') sendMessage(); });
+});
+
+const SYS = (m) => `You are a warm, energetic dispatching coach teaching ${studentName} the Highway Diva dispatcher method (from Erica Renee Grant's guide). You're teaching Module ${m.id}: "${m.title}". Topics: ${m.topics.join('; ')}.
+
+CRITICAL RULES:
+- Call the student by name (${studentName}) regularly to keep it personal
+- Keep responses SHORT — max 4 sentences or a short list. This is a phone screen in Nigeria with limited data.
+- ${studentName} is money-motivated. Tie EVERY lesson to earning potential. Reference the ${m.earn}/week unlock often.
+- Be practical. Give real examples from the trucking world.
+- If they say "start quiz", "quiz me", "test me", or "I'm ready" — respond ONLY with the exact text: QUIZ_READY
+- Adapt your teaching style based on their questions — if they ask basic questions, go simple; if they ask advanced questions, go deeper.
+- Be encouraging and celebratory. These are motivated learners.`;
+
+async function fetchAI(extraUserMsg) {
+  if (isLoading) return;
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  addTyping();
+  const msgs = [...chatHistory];
+  if (extraUserMsg) msgs.push({role:'user', content: extraUserMsg});
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:400, system: SYS(activeModule), messages: msgs })
+    });
+    const data = await res.json();
+    removeTyping();
+    const reply = data.content?.[0]?.text || "Connection issue — please try again!";
+    if (reply.trim() === 'QUIZ_READY') { startQuiz(); }
+    else {
+      addMsg('ai', reply);
+      chatHistory.push({role:'assistant', content: reply});
+      if (extraUserMsg) chatHistory.push({role:'user', content: extraUserMsg});
+    }
+  } catch(e) {
+    removeTyping();
+    addMsg('ai', 'Network issue. Please check your connection and try again.');
+  }
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+function startQuiz() {
+  quizState = { phase:'mc', mcIndex:0, essayIndex:0, mcScore:0, mcTotal: activeModule.mcQuestions.length, essayAnswers:[] };
+  addMsg('system', '📝 Quiz Time! Answer carefully — this unlocks your earnings!');
+  setTimeout(askNextQuestion, 300);
+  setQuickChips([]);
+}
+
+function askNextQuestion() {
+  const m = activeModule;
+  const qs = m.mcQuestions;
+  if (quizState.phase === 'mc' && quizState.mcIndex < qs.length) {
+    const q = qs[quizState.mcIndex];
+    const msgs = document.getElementById('chat-messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ai';
+    const qNum = quizState.mcIndex + 1;
+    const total = qs.length + m.essayQuestions.length;
+    wrap.innerHTML = `<strong>Q${qNum}/${total}:</strong> ${q.q}`;
+    msgs.appendChild(wrap);
+    const choiceWrap = document.createElement('div');
+    choiceWrap.className = 'quiz-choices';
+    q.choices.forEach((c, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-btn';
+      btn.textContent = (i+1) + '. ' + c;
+      btn.dataset.idx = i;
+      btn.dataset.qidx = quizState.mcIndex;
+      btn.onclick = () => handleMCAnswer(i, q, choiceWrap, btn);
+      choiceWrap.appendChild(btn);
+    });
+    msgs.appendChild(choiceWrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  } else if (quizState.phase === 'mc') {
+    quizState.phase = 'essay';
+    quizState.essayIndex = 0;
+    addMsg('system', '✍️ Now for 2 written questions — show what you know!');
+    setTimeout(askEssayQuestion, 300);
+  } else if (quizState.phase === 'essay' && quizState.essayIndex < m.essayQuestions.length) {
+    askEssayQuestion();
+  } else {
+    finishQuiz();
+  }
+}
+
+function handleMCAnswer(chosen, q, choiceWrap, clickedBtn) {
+  Array.from(choiceWrap.children).forEach(b => { b.onclick = null; b.style.cursor='default'; });
+  const correct = chosen === q.correct;
+  clickedBtn.className = 'quiz-btn ' + (correct ? 'correct' : 'wrong');
+  if (!correct) { choiceWrap.children[q.correct].className = 'quiz-btn correct'; }
+  allAnswers.push({ module: activeModule.id, type:'mc', topic: q.topic, correct, question: q.q, chosen: q.choices[chosen], correctAnswer: q.choices[q.correct] });
+  if (!learningProfile[q.topic]) learningProfile[q.topic] = { correct:0, total:0 };
+  learningProfile[q.topic].total++;
+  if (correct) { learningProfile[q.topic].correct++; quizState.mcScore++; }
+  addMsg('ai', correct ? '✅ Correct! Well done, ' + studentName + '!' : '❌ Not quite — the answer is: ' + q.choices[q.correct] + '. Remember this!');
+  quizState.mcIndex++;
+  saveData();
+  setTimeout(askNextQuestion, 800);
+}
+
+function askEssayQuestion() {
+  const eq = activeModule.essayQuestions[quizState.essayIndex];
+  const msgs = document.getElementById('chat-messages');
+  const qNum = activeModule.mcQuestions.length + quizState.essayIndex + 1;
+  const total = activeModule.mcQuestions.length + activeModule.essayQuestions.length;
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ai';
+  wrap.innerHTML = `<strong>Q${qNum}/${total} (Written):</strong><br><br>${eq.q}`;
+  msgs.appendChild(wrap);
+  const form = document.createElement('div');
+  form.style.padding = '0 4px';
+  const ta = document.createElement('textarea');
+  ta.className = 'essay-box';
+  ta.placeholder = 'Type your answer here...';
+  ta.id = 'essay-input-' + quizState.essayIndex;
+  const btn = document.createElement('button');
+  btn.className = 'essay-submit';
+  btn.textContent = 'Submit Answer →';
+  btn.onclick = () => submitEssay(ta.value.trim(), eq, form);
+  form.appendChild(ta); form.appendChild(btn);
+  msgs.appendChild(form);
+  msgs.scrollTop = msgs.scrollHeight;
+  quizState.type = 'essay';
+}
+
+async function submitEssay(answer, eq, form) {
+  if (!answer || answer.length < 10) { alert('Please write a more complete answer!'); return; }
+  form.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">Submitting...</div>';
+  addMsg('user', answer.substring(0,200) + (answer.length > 200 ? '...' : ''));
+  addTyping();
+  allAnswers.push({ module: activeModule.id, type:'essay', topic: eq.topic, key: eq.key, question: eq.q, answer });
+  if (!learningProfile[eq.topic]) learningProfile[eq.topic] = { correct:0, total:0, essays:[] };
+  learningProfile[eq.topic].essays = learningProfile[eq.topic].essays || [];
+  learningProfile[eq.topic].essays.push(answer);
+  saveData();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:300,
+        system:`You are a dispatcher coach evaluating a written answer. Be encouraging but honest. Score the answer 1-5 stars and give 2-3 sentences of specific feedback. Reference the correct concept from the Highway Diva guide. End with one encouragement tied to earning ${activeModule.earn}/week.`,
+        messages:[{role:'user', content:`Question: ${eq.q}\n\nStudent's answer: ${answer}\n\nEvaluate this answer for a dispatcher student learning the Highway Diva method.`}]
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    const feedback = data.content?.[0]?.text || 'Good effort! Keep studying.';
+    addMsg('ai', feedback);
+    const score = (feedback.match(/[⭐★✦]/g)||[]).length || (feedback.includes('5') ? 5 : feedback.includes('4') ? 4 : feedback.includes('3') ? 3 : 2);
+    if (!learningProfile[eq.topic]) learningProfile[eq.topic] = {correct:0,total:0};
+    learningProfile[eq.topic].total++;
+    if (score >= 3) learningProfile[eq.topic].correct++;
+  } catch(e) {
+    removeTyping();
+    addMsg('ai', 'Great effort! Your written answer has been recorded.');
+  }
+  quizState.essayIndex++;
+  quizState.type = null;
+  saveData();
+  if (quizState.essayIndex < activeModule.essayQuestions.length) {
+    setTimeout(askEssayQuestion, 600);
+  } else {
+    setTimeout(finishQuiz, 600);
+  }
+}
+
+function finishQuiz() {
+  quizState = null;
+  if (!completed.includes(activeModule.id)) completed.push(activeModule.id);
+  saveData();
+  const m = activeModule;
+  addMsg('unlock-msg', '', `
+    <div style="font-size:24px;margin-bottom:8px">${m.id === 6 ? '🏆' : '🎉'}</div>
+    <div style="font-weight:700;font-size:16px">Module ${m.id} Complete!</div>
+    <div class="unlock-amount">${m.earn}/week UNLOCKED</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px">${m.earnDetail}</div>
+  `);
+  setQuickChips(['What did I learn?', 'Tips to earn more', 'View my progress', 'Next module']);
+  document.getElementById('chat-mod-sub').textContent = '✓ Completed';
+}
+
+function showReport() {
+  const content = document.getElementById('report-content');
+  const c = completed.length;
+  const lastEarn = c > 0 ? MODULES.find(x => x.id === Math.max(...completed)).earnNum : 0;
+  const weeklyEarn = c > 0 ? MODULES.find(x => x.id === Math.max(...completed)).earn : '$0';
+  const mcAnswers = allAnswers.filter(a => a.type === 'mc');
+  const essayAnswers = allAnswers.filter(a => a.type === 'essay');
+  const mcCorrect = mcAnswers.filter(a => a.correct).length;
+  const mcPct = mcAnswers.length ? Math.round((mcCorrect / mcAnswers.length) * 100) : 0;
+
+  const topicStats = {};
+  allAnswers.forEach(a => {
+    if (!topicStats[a.topic]) topicStats[a.topic] = {correct:0,total:0};
+    topicStats[a.topic].total++;
+    if (a.correct) topicStats[a.topic].correct++;
+  });
+  const topicList = Object.entries(topicStats).sort((a,b) => {
+    const pctA = a[1].total ? a[1].correct/a[1].total : 0;
+    const pctB = b[1].total ? b[1].correct/b[1].total : 0;
+    return pctB - pctA;
+  });
+
+  const lStyle = detectLearningStyle();
+
+  content.innerHTML = `
+    <div class="report-hero">
+      <h2>📊 ${studentName}'s Progress Report</h2>
+      <p>${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</p>
+      <div class="report-earn">${weeklyEarn}/week unlocked</div>
+    </div>
+
+    <div class="report-section">
+      <h3>📈 Overall Stats</h3>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-num">${c}/6</div><div class="stat-label">Modules complete</div></div>
+        <div class="stat-box"><div class="stat-num">${mcPct}%</div><div class="stat-label">Quiz accuracy</div></div>
+        <div class="stat-box"><div class="stat-num">${mcCorrect}/${mcAnswers.length}</div><div class="stat-label">Questions correct</div></div>
+        <div class="stat-box"><div class="stat-num">${essayAnswers.length}</div><div class="stat-label">Essays written</div></div>
+      </div>
+    </div>
+
+    ${topicList.length > 0 ? `
+    <div class="report-section">
+      <h3>💡 Strengths & Areas to Improve</h3>
+      ${topicList.map(([topic, stats]) => {
+        const pct = stats.total ? Math.round((stats.correct/stats.total)*100) : 0;
+        const isStrong = pct >= 70;
+        const isWeak = pct < 50;
+        return `<div class="strength-item">
+          <div class="strength-dot ${isStrong?'dot-strong':isWeak?'dot-weak':'dot-neutral'}"></div>
+          <div class="strength-text">
+            <div class="strength-label" style="color:${isStrong?'var(--green)':isWeak?'#dc2626':'var(--gold)'}">${topic.toUpperCase()} — ${pct}%</div>
+            ${isStrong ? 'Strong grasp — keep it up!' : isWeak ? 'Needs more practice — review this topic.' : 'Good progress — almost there!'}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+
+    <div class="report-section">
+      <h3>🧠 How ${studentName} Learns Best</h3>
+      ${lStyle.bars.map(b => `
+        <div class="learning-style-bar">
+          <span class="ls-label">${b.label}</span>
+          <div class="ls-bar"><div class="ls-fill" style="width:${b.pct}%;background:${b.color}"></div></div>
+          <span class="ls-pct" style="color:${b.color}">${b.pct}%</span>
+        </div>`).join('')}
+      <p style="font-size:13px;color:var(--muted);margin-top:12px;line-height:1.6">${lStyle.description}</p>
+    </div>
+
+    <div class="report-section">
+      <h3>🎯 Modules Completed</h3>
+      ${MODULES.map(m => {
+        const done = completed.includes(m.id);
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:18px">${done ? '✅' : '⬜'}</span>
+          <span style="font-size:13px;color:${done?'var(--text)':'var(--muted)'}">${m.icon} Module ${m.id}: ${m.title}</span>
+          ${done ? `<span style="margin-left:auto;font-size:11px;color:var(--green);font-weight:600">${m.earn}</span>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+
+    <button class="share-report-btn" onclick="shareReport()">📤 Share This Report with Coach</button>
+    <button class="whatsapp-btn" onclick="shareViaWhatsApp()">💬 Share on WhatsApp</button>
+  `;
+  showScreen('screen-report');
+}
+
+function detectLearningStyle() {
+  const essays = allAnswers.filter(a => a.type === 'essay');
+  const mc = allAnswers.filter(a => a.type === 'mc');
+  const avgEssayLength = essays.length ? essays.reduce((s,a) => s + (a.answer||'').length, 0) / essays.length : 0;
+  const mcSpeed = mc.length;
+  const verbal = Math.min(100, Math.round((avgEssayLength / 300) * 100)) || 40;
+  const practical = Math.min(100, Math.round((mcSpeed / 16) * 100)) || 30;
+  const analytical = Math.min(100, topicAccuracy('calculations') * 100) || 25;
+
+  let description = '';
+  if (verbal > 60) description = `${studentName} is a verbal learner who expresses understanding well in writing. She benefits from explanation-based teaching and detailed examples.`;
+  else if (practical > 60) description = `${studentName} is a practical learner who moves through material confidently. She benefits from real-world scenarios and step-by-step walkthroughs.`;
+  else description = `${studentName} is building her foundation. She responds best to clear, short explanations with immediate examples she can relate to.`;
+
+  return {
+    bars: [
+      {label:'Written', pct: verbal, color:'#BA7517'},
+      {label:'Practical', pct: practical, color:'#3B6D11'},
+      {label:'Analytical', pct: analytical, color:'#1a56db'},
+    ],
+    description
+  };
+}
+
+function topicAccuracy(topic) {
+  const items = allAnswers.filter(a => a.topic === topic);
+  if (!items.length) return 0.5;
+  return items.filter(a => a.correct).length / items.length;
+}
+
+function shareReport() {
+  const c = completed.length;
+  const weeklyEarn = c > 0 ? MODULES.find(x => x.id === Math.max(...completed)).earn : '$0';
+  const mcAnswers = allAnswers.filter(a => a.type === 'mc');
+  const mcCorrect = mcAnswers.filter(a => a.correct).length;
+  const mcPct = mcAnswers.length ? Math.round((mcCorrect/mcAnswers.length)*100) : 0;
+  const topicStats = {};
+  allAnswers.forEach(a => {
+    if (!topicStats[a.topic]) topicStats[a.topic] = {correct:0,total:0};
+    topicStats[a.topic].total++;
+    if (a.correct) topicStats[a.topic].correct++;
+  });
+  const weakTopics = Object.entries(topicStats).filter(([,s]) => s.total && (s.correct/s.total) < 0.5).map(([t]) => t);
+  const strongTopics = Object.entries(topicStats).filter(([,s]) => s.total && (s.correct/s.total) >= 0.7).map(([t]) => t);
+  const lStyle = detectLearningStyle();
+  const report = `HIGHWAY DIVA ACADEMY — STUDENT REPORT
+━━━━━━━━━━━━━━━━━━━━━━
+Student: ${studentName}
+Date: ${new Date().toLocaleDateString()}
+━━━━━━━━━━━━━━━━━━━━━━
+📊 PROGRESS
+• Modules complete: ${c}/6
+• Earning potential unlocked: ${weeklyEarn}/week
+• Quiz accuracy: ${mcPct}% (${mcCorrect}/${mcAnswers.length} correct)
+• Essays submitted: ${allAnswers.filter(a=>a.type==='essay').length}
+
+✅ STRENGTHS
+${strongTopics.length ? strongTopics.join(', ') : 'Building foundation'}
+
+⚠️ NEEDS WORK
+${weakTopics.length ? weakTopics.join(', ') : 'No weak areas yet — keep going!'}
+
+🧠 LEARNING STYLE
+${lStyle.description}
+
+📋 MODULES COMPLETED
+${MODULES.map(m => completed.includes(m.id) ? `✅ Module ${m.id}: ${m.title} (${m.earn})` : `⬜ Module ${m.id}: ${m.title}`).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━
+Generated by Highway Diva Dispatcher Academy`;
+
+  if (navigator.share) {
+    navigator.share({ title: `${studentName} — Dispatcher Progress Report`, text: report }).catch(()=>{});
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = report; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    alert('Report copied! Paste it in your message to your coach.');
+  }
+}
+
+function shareViaWhatsApp() {
+  const c = completed.length;
+  const weeklyEarn = c > 0 ? MODULES.find(x => x.id === Math.max(...completed)).earn : '$0';
+  const mcAnswers = allAnswers.filter(a => a.type === 'mc');
+  const mcPct = mcAnswers.length ? Math.round((mcAnswers.filter(a=>a.correct).length/mcAnswers.length)*100) : 0;
+  const text = `📊 *DISPATCHER ACADEMY UPDATE*\n\n👤 Student: *${studentName}*\n✅ Modules done: *${c}/6*\n💰 Unlocked: *${weeklyEarn}/week*\n🎯 Quiz accuracy: *${mcPct}%*\n\n${MODULES.map(m=>completed.includes(m.id)?`✅ Module ${m.id}: ${m.title}`:`⬜ Module ${m.id}: ${m.title}`).join('\n')}\n\n_Highway Diva Dispatcher Academy_`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+}
+
+const savedName = getStorage('hd_last_name');
+if (savedName) document.getElementById('name-input').value = savedName;
+</script>
+</body>
+</html>
